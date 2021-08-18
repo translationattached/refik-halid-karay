@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Locations in Refik Halit Karay's The Cobbler</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
+  <link rel="stylesheet" href="//unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin=""/>
+  <script src="//unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+  <script src="AnimatedMarker.js"></script>
+
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: 'Avenir Next';
+    }
+    #map {
+      float:left;
+      width: 80%;
+      height: 100%;
+      filter: sepia(30%) brightness(90%);
+    }
+
+    #list {
+      width: 20%;
+      height: 100%;
+      background: #f9f2e7;
+      float: right;
+      overflow-y: scroll;
+      overflow-x: hidden;
+    }
+
+    #list div {
+      height: 100%;
+      padding: 1em;
+      margin: 0;
+      border-bottom: 2px black solid;
+    }
+
+    /*
+    #list div:nth-child(2n) { 
+      background: bisque;
+    }
+    #list div:nth-child(2n+1) { 
+      background: #f9f2e7;
+    }
+    */
+
+
+  </style>
+
+  
+</head>
+<body>
+
+<div id="map"></div>
+<div id="list">
+</div>
+
+<script>
+
+  var map = L.map('map', {
+    zoomAnimation: false, 
+    markerZoomAnimation: false,
+    fadeAnimation: false
+  })
+
+  const toggleZoom = b => {
+    ['touchZoom', 'doubleClickZoom', 'scrollWheelZoom', 'boxZoom', 'keyboard'].forEach(f => {
+      map[f][b ? 'enable' : 'disable']()
+    })
+  }
+
+  map.createPane('labels')
+
+  // This pane is above markers but below popups
+  map.getPane('labels').style.zIndex = 650
+
+  // Layers in this pane are non-interactive and do not obscure mouse/touch events
+  map.getPane('labels').style.pointerEvents = 'none'
+
+  var cartodbAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/attribution">CARTO</a>'
+
+  var positron = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', {
+    attribution: cartodbAttribution
+  }).addTo(map)
+
+  var positronLabels = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png', {
+    attribution: cartodbAttribution,
+    pane: 'labels'
+  }).addTo(map)
+
+
+  let toRemoveLater = []
+  audios = {
+    ferry: new Audio("ferry-noise-short.mp3"),
+    tunel: new Audio("tunel-noise-short.mp3")
+  }
+  audio = audios.tunel
+
+  const removeAllLayers = () => {
+    audio.pause()
+    audio.currentTime = 0
+    toRemoveLater.forEach(layer => {
+      map.removeLayer(layer)
+    })
+  }
+
+  var data = [
+    {
+      title: `Locations in Refik Halid Karay's <br> "The Cobbler"`,
+      desc: "This is an interactive map of the locations in the story. The initial setting of the story is Istanbul. Although a the time is not given in the text, the ease of movement between what are now different countries may imply that the story is set in a pre-World War I time.",
+      pos: { lat: 41.062656637609344, lng: 29.02519226074219 },
+      zoom: 12,
+      animation: cb => { animatedMarkerCallback() ; cb() }
+    },
+    {
+      title: "Hasan's mother's house",
+      desc: "When Hasan tells the cobbler about his life in Istanbul, he describes their house in Kanlıca, and how he used to go fishing with their neighbor's son Mahmut.",
+      pos: { lat: 41.09660739378573, lng: 29.06694889068604 },
+      zoom: 15,
+      animation: cb => { 
+        let m = L.marker({ lat: 41.09593833381439, lng: 29.07236695289612 }, {
+          icon: icons.house
+        })
+        map.addLayer(m)
+        toRemoveLater.push(m)
+
+        animatedMarkerCallback()
+        cb() 
+      }
+    },
+    {
+      title: "Tünel, the historic subway",
+      desc: "Hasan mentions to the cobbler that he and his mom take the Tünel when she is going to the doctor.",
+      pos: { lat: 41.026786315232265, lng: 28.973200321197513 },
+      zoom: 16,
+      animation: cb => {
+        const karakoy = { lat: 41.02280199024886, lng: 28.974139094352726 }
+        const istiklal = { lat: 41.0283868573451, lng: 28.97405326366425 }
+        var line = L.polyline([karakoy, istiklal, karakoy, istiklal, karakoy], {
+          opacity: 1,
+          color: 'black',
+          weight: 5
+        })
+        map.addLayer(line)
+        toRemoveLater.push(line)
+
+        audio = audios.tunel
+        audio.play()
+        var animatedMarker = L.animatedMarker(line.getLatLngs(), {
+          icon: icons.tunel,
+          interval: 2000,
+          onEnd : animatedMarkerCallback
+        })
+        map.addLayer(animatedMarker)
+        toRemoveLater.push(animatedMarker)
+        cb()
+      }
+    },
+    {
+      title: "The Sea of Marmara",
+      desc: "Hasan gets on a maritime journey from Istanbul to Palestine. They cross seas and stop by cities to drop off passengers.",
+      pos: { lat: 40.76494141246851, lng: 28.103027343750004 },
+      zoom: 9,
+      animation: cb => {
+        console.log("NEW MARMARA");
+        var line = L.polyline([
+          { lat: 41.09632036587136, lng: 29.062056541442875 }, 
+          { lat: 40.7980870753293, lng: 28.88614654541016 }, 
+          { lat: 40.780476439378596, lng: 28.4296989440918 },
+          { lat: 40.76247107352298, lng: 27.774124145507816 },
+          { lat: 40.758050237824385, lng: 27.486763000488285 },
+          { lat: 40.51810569761435, lng: 27.10910797119141 },
+          { lat: 40.3930056269913, lng: 26.670083999633793 }
+        ], { opacity: 0 })
+        map.addLayer(line)
+        toRemoveLater.push(line)
+
+        audio = audios.ferry
+        audio.play()
+        var animatedMarker = L.animatedMarker(line.getLatLngs(), {
+          icon: icons.ferry,
+          onEnd : animatedMarkerCallback
+        })
+        map.addLayer(animatedMarker)
+        toRemoveLater.push(animatedMarker)
+        return
+      }
+    },
+    {
+      title: "The Aegean Sea",
+      desc: "They stop by more cities on the way and drop off passengers.",
+      pos: { lat: 38.843986129756644, lng: 24.63134765625 },
+      zoom: 7,
+      animation: cb => {
+        var line = L.polyline([
+          { lat: 40.3930056269913, lng: 26.670083999633793 },
+          { lat: 39.84597641887649, lng: 25.664062500000004 },
+          { lat: 39.1252663054351, lng: 25.142211914062504 },
+          { lat: 38.383382073185246, lng: 26.337661743164066 },
+          { lat: 38.383382073185246, lng: 26.337661743164066 }, // pause
+          { lat: 37.96423010313807, lng: 25.57754516601564 },
+          { lat: 37.023935745931624, lng: 26.19552612304688 },
+          { lat: 36.28911666456517, lng: 27.188415527343754 }
+        ], { opacity: 0 })
+        map.addLayer(line)
+        toRemoveLater.push(line)
+
+        audio = audios.ferry
+        audio.play()
+        var animatedMarker = L.animatedMarker(line.getLatLngs(), {
+          icon: icons.ferry,
+          onEnd : animatedMarkerCallback
+        })
+        map.addLayer(animatedMarker)
+        toRemoveLater.push(animatedMarker)
+        cb()
+      }
+    },
+    {
+      title: "The Mediterranean Sea",
+      desc: "They stop by more cities on the way and drop off passengers. <br><br>As they move towards the southeast, Hasan starts hearing more and more Arabic on the ferry, which he does not understand. <br><br>The ferry Hasan was on finally arrives at the Port of Haifa. At this point Hasan does not hear any Turkish at all, and starts getting more silent.",
+      pos: { lat: 34.17090836352573, lng: 32.29980468750001 },
+      zoom: 7,
+      animation: cb => {
+        var line = L.polyline([
+          { lat: 36.28911666456517, lng: 27.188415527343754 },
+          { lat: 35.11766197360177, lng: 27.457580566406254 },
+          { lat: 36.14896463588831, lng: 30.580444335937504 },
+          { lat: 36.730079507078415, lng: 30.500793457031254 },
+          { lat: 35.766572101173516, lng: 32.77496337890626 },
+          { lat: 36.153400163891945, lng: 34.27185058593751 },
+          { lat: 36.677230602346214, lng: 34.60968017578126 },
+          { lat: 36.3106987841827, lng: 35.18096923828126 },
+          { lat: 36.66180949419195, lng: 35.92803955078126 },
+          { lat: 36.3106987841827, lng: 35.18096923828126 },
+          { lat: 35.563512051219696, lng: 35.57373046875001 },
+          { lat: 33.89093747081252, lng: 35.10681152343751 },
+          { lat: 33.15364887320584, lng: 34.41192626953126 },
+          { lat: 32.74801260358348, lng: 34.67010498046876 }
+        ], { opacity: 0 })
+        map.addLayer(line)
+        toRemoveLater.push(line)
+
+        audio = audios.ferry
+        audio.play()
+        var animatedMarker = L.animatedMarker(line.getLatLngs(), {
+          icon: icons.ferry,
+          onEnd : animatedMarkerCallback
+        })
+        map.addLayer(animatedMarker)
+        toRemoveLater.push(animatedMarker)
+        cb()
+      }
+    },
+    {
+      title: "The train ride from Haifa",
+      desc: "They pass through orange orchards, olive gardens. When the gardens run out, Hasan starts seeing barren mountains, goats, and eventually camels. ",
+      pos: { lat: 32.778037985363675, lng: 34.89120483398438 },
+      zoom: 16,
+      animation: cb => {
+        var line = L.polyline([
+          { lat: 32.778037985363675, lng: 34.89120483398438 }
+
+        ], {
+          opacity: 1,
+          color: 'black',
+          weight: 5
+        })
+        map.addLayer(line)
+        toRemoveLater.push(line)
+
+        audio = audios.tunel
+        audio.play()
+        var animatedMarker = L.animatedMarker(line.getLatLngs(), {
+          icon: icons.tunel,
+          interval: 2000,
+          onEnd : animatedMarkerCallback
+        })
+        map.addLayer(animatedMarker)
+        toRemoveLater.push(animatedMarker)
+        cb()
+      }
+    }
+  ]
+
+  icons = {
+    house: L.icon({ iconUrl: 'house.png', iconSize: [105, 67] }),
+    ferry: L.icon({ iconUrl: 'ferry.png', iconSize: [90, 90] }),
+    tunel: L.icon({ iconUrl: 'tunel.png', iconSize: [90, 90] })
+  }
+
+  const animatedMarkerCallback = () => { 
+    toggleZoom(true) 
+    inAnimation = false
+  }
+  const haltCallback = () => { }
+  const runAnimation = x => { if (x) { x(haltCallback) } }
+  inAnimation = false
+  const runData = o => {
+    if (inAnimation) { return }
+    removeAllLayers()
+    inAnimation = true
+    toggleZoom(false)
+    map.flyTo(o.pos, o.zoom)
+
+    map.on('zoomend', function() {
+      map.off('zoomend')
+      runAnimation(o.animation)
+    })
+  }
+  map.on('zoomstart', function() {
+    removeAllLayers()
+  })
+
+
+
+  map.setView({ lat: 41.062656637609344, lng: 29.02519226074219 }, 12)
+
+  const changeColor = (col, amt) => {
+    let num = parseInt(col, 16)
+    let r = (num >> 16) + amt
+    let b = ((num >> 8) & 0x00FF) + amt
+    let g = (num & 0x0000FF) + amt
+    let newColor = g | (b << 8) | (r << 16)
+    return newColor.toString(16)
+  }
+
+  let color = "F9F2E7"
+
+  data.forEach((o, i) => {
+    const tag = i === 0 ? "h1" : "h3"
+    document.querySelector("#list").innerHTML += 
+      `<div data-id="${i}" style="background: #${color};">
+        <${tag}>${o.title}</${tag}>
+       ${o.desc}
+      </div>`
+        // <${tag}><a onClick="runData(data[${i}])">${o.title}</a></${tag}>
+    color = changeColor(color, -7)
+  })
+
+  cur = 0
+  document.querySelector('#list').scrollTop = 0
+  window.addEventListener('wheel', function(e) {
+    const t = document.querySelector('#list').scrollTop
+    const xs = Array.from(document.querySelectorAll('#list div')).map(e => Math.abs(t - e.offsetTop))
+    newCur = xs.indexOf(Math.min(...xs))
+    if(newCur != cur) {
+      console.log(`Changed from ${cur} to ${newCur}!`)
+      cur = newCur
+      runData(data[newCur])
+    }
+  })
+
+
+</script>
+
+<!-- <div>Icons made by <a href="https://www.flaticon.com/authors/photo3idea-studio" title="photo3idea_studio">photo3idea_studio</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div> -->
+
+</body>
+</html>

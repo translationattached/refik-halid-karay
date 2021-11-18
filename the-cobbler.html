@@ -1,65 +1,58 @@
 <!DOCTYPE html>
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <title>Locations in Refik Halit Karay's The Cobbler</title>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
+	<meta name="author" content="Joomy Korkut and Nefise Kahraman" />
+	<meta name="description" content="Interactive maps from Refik Halid Karay's Stories from Exile (Gurbet Hikayeleri)" />
+	<meta name="keywords"  content="interactive map, Refik Halid Karay, Stories from Exile, Gurbet Hikayeleri" />
+
+
+  <!-- <link rel="shortcut icon" type="image/x-icon" href="images/favicon.ico" /> -->
   <link rel="stylesheet" href="//unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin=""/>
   <script src="//unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
   <script src="AnimatedMarker.js"></script>
-
-  <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      font-family: 'Avenir Next';
-    }
-    #map {
-      float:left;
-      width: 80%;
-      height: 100%;
-      filter: sepia(30%) brightness(90%);
-    }
-
-    #list {
-      width: 20%;
-      height: 100%;
-      background: #f9f2e7;
-      float: right;
-      overflow-y: scroll;
-      overflow-x: hidden;
-    }
-
-    #list div {
-      height: 100%;
-      padding: 1em;
-      margin: 0;
-      border-bottom: 2px black solid;
-    }
-
-    /*
-    #list div:nth-child(2n) { 
-      background: bisque;
-    }
-    #list div:nth-child(2n+1) { 
-      background: #f9f2e7;
-    }
-    */
-
-
-  </style>
-
-  
+	<link rel="stylesheet" type="text/css" href="fullpage/fullpage.css" />
+	<link rel="stylesheet" type="text/css" href="fullpage/examples.css" />
+	<!--[if IE]>
+		<script type="text/javascript">
+			 var console = { log: function() {} };
+		</script>
+	<![endif]-->
 </head>
 <body>
 
+<ul id="menu">
+	<!-- <li data-menuanchor="firstPage"><a href="#firstPage">First slide</a></li> -->
+	<!-- <li data-menuanchor="secondPage"><a href="#secondPage">Second slide</a></li> -->
+	<!-- <li data-menuanchor="3rdPage"><a href="#3rdPage">Third slide</a></li> -->
+</ul>
+
 <div id="map"></div>
-<div id="list">
+<div id="fullpage">
 </div>
 
-<script>
+<div id="infoMenu">
+  <ul>
+    <li><a href="index.html">Main Page</a></li>
+    <li>
+      <a href="#" id="showExamples">All Stories</a>
+      <div id="examplesList">
+        <div class="column">
+          <ul>
+            <h3>All interactive maps</h3>
+            <li><a href="./the-cobbler.html">The Cobbler (<i>Eskici</i>)</a></li>
+            <li>The Antique Dealer (<i>Antikacı</i>)</li>
+          </ul>
+        </div>
+      </div>
+    </li>
+  </ul>
+</div>
 
+<script type="text/javascript" src="fullpage/fullpage.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
   var map = L.map('map', {
     zoomAnimation: false, 
     markerZoomAnimation: false,
@@ -91,6 +84,20 @@
     pane: 'labels'
   }).addTo(map)
 
+  map.setView({ lat: 41.062656637609344, lng: 29.02519226074219 }, 12)
+
+  // map.flyTo( 41.062656637609344, 29.02519226074219 )
+
+
+  const changeColor = (col, amt) => {
+    let num = parseInt(col, 16)
+    let r = (num >> 16) + amt
+    let b = ((num >> 8) & 0x00FF) + amt
+    let g = (num & 0x0000FF) + amt
+    let newColor = g | (b << 8) | (r << 16)
+    return newColor.toString(16)
+  }
+
 
   let toRemoveLater = []
   audios = {
@@ -99,13 +106,29 @@
   }
   audio = audios.tunel
 
+  icons = {
+    house: L.icon({ iconUrl: 'house.png', iconSize: [105, 67] }),
+    ferry: L.icon({ iconUrl: 'ferry.png', iconSize: [90, 90] }),
+    tunel: L.icon({ iconUrl: 'tunel.png', iconSize: [90, 90] }),
+    palestine: L.icon({ iconUrl: 'PalestineRailways1924.jpg', iconSize: [360, 680] })
+  }
   const removeAllLayers = () => {
+    console.log("removing");
     audio.pause()
     audio.currentTime = 0
     toRemoveLater.forEach(layer => {
       map.removeLayer(layer)
     })
   }
+  const animatedMarkerCallback = () => { 
+    toggleZoom(true) 
+    inAnimation = false
+    myFullpage.setAllowScrolling(true)
+    menu.classList.remove('disabled')
+  }
+
+  const haltCallback = () => { }
+  const runAnimation = x => { if (x) { x(haltCallback) } }
 
   var data = [
     {
@@ -257,13 +280,30 @@
     },
     {
       title: "The train ride from Haifa",
+      desc: "Hasan takes the train from Haifa to a Palestinian village. Here is a 1924 map of the train lines in Palestine at the time.",
+      pos: { lat: 32.58616357743131, lng: 34.32678222656251 },
+      zoom: 8,
+      animation: cb => {
+        let overlay = L.marker({ lat: 32.4031537914036, lng: 35.35400390625001 }, {
+          icon: icons.palestine
+        })
+        map.addLayer(overlay)
+        toRemoveLater.push(overlay)
+
+        animatedMarkerCallback()
+        cb()
+      }
+    },
+    {
+      title: "Hasan's train ride",
       desc: "They pass through orange orchards, olive gardens. When the gardens run out, Hasan starts seeing barren mountains, goats, and eventually camels. ",
-      pos: { lat: 32.778037985363675, lng: 34.89120483398438 },
-      zoom: 16,
+      pos: { lat: 32.58616357743132, lng: 34.32678222656251 },
+      zoom: 9,
       animation: cb => {
         var line = L.polyline([
-          { lat: 32.778037985363675, lng: 34.89120483398438 }
-
+          { lat: 32.778037985363675, lng: 34.89120483398438 },
+          { lat: 32.43329491065414, lng: 35.11779785156251 },
+          { lat: 32.498180028410765, lng: 35.72204589843751 }
         ], {
           opacity: 1,
           color: 'black',
@@ -286,78 +326,63 @@
     }
   ]
 
-  icons = {
-    house: L.icon({ iconUrl: 'house.png', iconSize: [105, 67] }),
-    ferry: L.icon({ iconUrl: 'ferry.png', iconSize: [90, 90] }),
-    tunel: L.icon({ iconUrl: 'tunel.png', iconSize: [90, 90] })
-  }
+  let fp = document.querySelector('#fullpage')
+  let menu = document.querySelector('#menu')
+  data.forEach((d,i) => {
+    let j = i + 1
+    menu.innerHTML += `
+    <li id="${j}" data-menuanchor="${j}"><a href="#${j}">${j}</a></li>
+    `
 
-  const animatedMarkerCallback = () => { 
-    toggleZoom(true) 
-    inAnimation = false
-  }
-  const haltCallback = () => { }
-  const runAnimation = x => { if (x) { x(haltCallback) } }
-  inAnimation = false
-  const runData = o => {
-    if (inAnimation) { return }
-    removeAllLayers()
-    inAnimation = true
-    toggleZoom(false)
-    map.flyTo(o.pos, o.zoom)
-
-    map.on('zoomend', function() {
-      map.off('zoomend')
-      runAnimation(o.animation)
-    })
-  }
-  map.on('zoomstart', function() {
-    removeAllLayers()
+    fp.innerHTML += `
+    <div class="section">
+      <h1>${d.title}</h1>
+      <p>${d.desc}</p>
+    </div>
+    `
   })
 
-
-
-  map.setView({ lat: 41.062656637609344, lng: 29.02519226074219 }, 12)
-
-  const changeColor = (col, amt) => {
-    let num = parseInt(col, 16)
-    let r = (num >> 16) + amt
-    let b = ((num >> 8) & 0x00FF) + amt
-    let g = (num & 0x0000FF) + amt
-    let newColor = g | (b << 8) | (r << 16)
-    return newColor.toString(16)
+  let colors = ["F9F2E7"] 
+  let anchors = ["1"] 
+  let num = document.querySelectorAll('#fullpage .section').length
+  for(let i = 0; i < num - 1; i++) {
+    colors.push(changeColor(colors[i], -10))
+    anchors.push(`${i+2}`)
   }
+  colors = colors.map(x => `#${x}`)
 
-  let color = "F9F2E7"
+  //fullpage initialisation
+  let myFullpage = new fullpage('#fullpage', {
+      sectionsColor: colors,
+      anchors: anchors,
+      // menu: '#menu',
+      onLeave: function(origin, destination, direction){
+        // console.log(origin, destination, direction)
+        let o = data[destination.index]
+        removeAllLayers()
+        inAnimation = true
+        toggleZoom(false)
+        myFullpage.setAllowScrolling(false)
+        menu.classList.add('disabled')
+        map.flyTo(o.pos, o.zoom)
 
-  data.forEach((o, i) => {
-    const tag = i === 0 ? "h1" : "h3"
-    document.querySelector("#list").innerHTML += 
-      `<div data-id="${i}" style="background: #${color};">
-        <${tag}>${o.title}</${tag}>
-       ${o.desc}
-      </div>`
-        // <${tag}><a onClick="runData(data[${i}])">${o.title}</a></${tag}>
-    color = changeColor(color, -7)
+        map.on('zoomend', function() {
+          map.off('zoomend')
+          runAnimation(o.animation)
+        })
+      },
+      onSlideLeave: function(section, origin, destination, direction){
+      },
+      afterRender: function(){
+      },
+      afterResize: function(width, height){
+      },
+      afterSlideLoad: function(section, origin, destination, direction){
+      },
+      afterLoad: function(origin, destination, direction){
+      }
   })
-
-  cur = 0
-  document.querySelector('#list').scrollTop = 0
-  window.addEventListener('wheel', function(e) {
-    const t = document.querySelector('#list').scrollTop
-    const xs = Array.from(document.querySelectorAll('#list div')).map(e => Math.abs(t - e.offsetTop))
-    newCur = xs.indexOf(Math.min(...xs))
-    if(newCur != cur) {
-      console.log(`Changed from ${cur} to ${newCur}!`)
-      cur = newCur
-      runData(data[newCur])
-    }
-  })
-
-
 </script>
-
-<!-- <div>Icons made by <a href="https://www.flaticon.com/authors/photo3idea-studio" title="photo3idea_studio">photo3idea_studio</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div> -->
 
 </body>
 </html>

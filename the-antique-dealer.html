@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <title>Locations in Refik Halit Karay's The Cobbler</title>
+  <title>Locations in Refik Halit Karay's The Antique Dealer</title>
 	<meta name="author" content="Joomy Korkut and Nefise Kahraman" />
 	<meta name="description" content="Interactive maps from Refik Halid Karay's Stories from Exile (Gurbet Hikayeleri)" />
 	<meta name="keywords"  content="interactive map, Refik Halid Karay, Stories from Exile, Gurbet Hikayeleri" />
@@ -84,45 +84,142 @@
     pane: 'labels'
   }).addTo(map)
 
-  map.setView({ lat: 41.062656637609344, lng: 29.02519226074219 }, 12)
+  map.setView({ lat: 36.15007354140755, lng: 37.08435058593751 }, 9)
 
   audios = {
-    ferry: new Audio("assets/ferry-noise-short.mp3"),
+    cowbell: new Audio("assets/cowbell.mp3"),
     tunel: new Audio("assets/tunel-noise-short.mp3")
   }
   audio = audios.tunel
 
   icons = {
     house: L.icon({ iconUrl: 'assets/house.png', iconSize: [105, 67] }),
+    /*
     ferry: L.icon({ iconUrl: 'assets/ferry.png', iconSize: [90, 90] }),
-    tunel: L.icon({ iconUrl: 'assets/tunel.png', iconSize: [90, 90] }),
-    palestine: L.icon({ iconUrl: 'assets/PalestineRailways1924.jpg', iconSize: [360, 680] })
+    */
+    train: L.icon({ iconUrl: 'assets/tunel.png', iconSize: [90, 90] }),
+    cowbell: L.icon({ iconUrl: 'assets/cowbell.png', iconSize: [90, 90] }),
+    occupationOfIstanbul: L.icon({ iconUrl: 'assets/occupationOfIstanbul.jpg', iconSize: [500, 305] })
   }
 
   var data = [
     {
-      title: `Locations in Refik Halid Karay's <br> "The Cobbler"`,
-      desc: "This is an interactive map of the locations in the story. The initial setting of the story is Istanbul. Although a the time is not given in the text, the ease of movement between what are now different countries may imply that the story is set in a pre-World War I time.",
-      pos: { lat: 41.062656637609344, lng: 29.02519226074219 },
-      zoom: 12,
+      title: `Locations in Refik Halid Karay's <br> "The Antique Dealer"`,
+      desc: "This is an interactive map of the locations in the story. The initial setting of the story is Aleppo, now in Syria. Although a the time is not given in the text, the ease of movement between what are now different countries may imply that the story is set in a pre-World War I time.",
+      pos: { lat: 36.15007354140755, lng: 37.08435058593751 },
+      zoom: 9,
       animation: cb => { animatedMarkerCallback() ; cb() }
     },
     {
-      title: "Hasan's mother's house",
-      desc: "When Hasan tells the cobbler about his life in Istanbul, he describes their house in Kanlıca, and how he used to go fishing with their neighbor's son Mahmut.",
-      pos: { lat: 41.09660739378573, lng: 29.06694889068604 },
-      zoom: 15,
+      title: "The Frechman traveling from Lebanon to Aleppo",
+      desc: "A French man who is a collector of antique jugs and employed as a municipal counselor in Lebanon travels to Aleppo to check out the antique dealer Sheik Efgani's collection.",
+      pos: { lat: 34.96024630257349, lng: 36.21093750000001 },
+      zoom: 8,
       animation: cb => { 
-        let m = L.marker({ lat: 41.09593833381439, lng: 29.07236695289612 }, {
-          icon: icons.house
+        const lebanon = { lat: 33.84204727583369, lng: 35.559310913085945 }
+        const aleppo = { lat: 34.96024630257349, lng: 36.21093750000001 }
+        var line = L.polyline([lebanon, aleppo], {
+          opacity: 1,
+          color: 'black',
+          weight: 5
         })
-        map.addLayer(m)
-        toRemoveLater.push(m)
+        map.addLayer(line)
+        toRemoveLater.push(line)
+
+        audio = audios.tunel
+        audio.play()
+        var animatedMarker = L.animatedMarker(line.getLatLngs(), {
+          icon: icons.train,
+          interval: 2000,
+          onEnd : animatedMarkerCallback
+        })
+        map.addLayer(animatedMarker)
+        toRemoveLater.push(animatedMarker)
 
         animatedMarkerCallbackI()
         cb() 
       }
     },
+    {
+      title: "Cowbells and ox bells",
+      desc: "“Convey my thanks/gratitude to him. He is a good customer; he collects cowbells and ox bells. He claims to have 5000 types of them. He has collected all the bells used in Europe and Asia; soon he's going to start searching in Africa and Oceania. I sold him eighty-seven from Afghanistan alone. Of all the bells, camels’ are the least valuable ones. Yak bells from Tibet are the most precious... Those animals do not live below a 2000 meter elevation.”",
+      pos: { lat: 32.62087018318113, lng: 84.55078125 },
+      zoom: 3,
+      animation: cb => { 
+        audio = audios.cowbell
+        audio.play()
+        let tibet = { lat: 29.54717721331581, lng: 90.96679687500001 }
+        let oceania = { lat: -17.848061398396343, lng: 177.835693359375 }
+        let afghanistan = { lat: 33.527658137677335, lng: 66.07177734375001 }
+        let europe = { lat: 47.80762081718071, lng: 11.502685546875002 }
+        let africa = { lat: 2.7619911809918345, lng: 33.28857421875001 }
+
+        let all = [tibet, oceania, afghanistan, europe, africa]
+        for (const icon of all) {
+          let m = L.marker(icon, { icon: icons.cowbell })
+          map.addLayer(m)
+          toRemoveLater.push(m)
+        }
+
+        animatedMarkerCallbackI()
+        cb() 
+      }
+    },
+    {
+      title: "The homeland of the Sheik",
+      desc: "Upon the narrator’s inquiry, the antique dealer Sheik Efgani says he is from Gulābād, Afghanistan. The narrator, noting the Sheik’s blond hair and blue eyes, questions the man’s purported origin.",
+      pos: { lat: 31.5656652152831, lng: 64.31121826171876 },
+      zoom: 6,
+      animation: cb => { 
+        let m = L.marker({ lat: 31.5656652152831, lng: 64.31121826171876 }, {
+          icon: icons.house
+        })
+        map.addLayer(m)
+        toRemoveLater.push(m)
+        animatedMarkerCallbackI()
+        cb() 
+      }
+    },
+    {
+      title: "Istanbul and Cairo",
+      desc: "The narrator travels to Istanbul and Cairo during the Great War.",
+      pos: { lat: 41.062656637609344, lng: 29.02519226074219 },
+      zoom: 12,
+      animation: cb => { 
+
+        console.log("OVERLAY");
+        let overlay = L.marker({ lat: 41.030574134537254, lng: 28.975431919097904 }, {
+          icon: icons.occupationOfIstanbul
+        })
+        map.addLayer(overlay)
+        toRemoveLater.push(overlay)
+        animatedMarkerCallbackI()
+        cb() 
+      }
+    },
+    {
+      title: "King David Hotel in Jerusalem",
+      desc: "Soon after he returns from Egypt, the narrator meets an acquaintance at King David Hotel in Jerusalem over an evening whiskey. At the hotel, he sees Sheik Efgani who no longer looks like an antique dealer but a British soldier.",
+      pos: { lat: 31.77385607907466, lng: 35.22766113281251 },
+      zoom: 9,
+      animation: cb => { 
+
+        animatedMarkerCallbackI()
+        cb() 
+      }
+    },
+    {
+      title: "Return to Syria",
+      desc: "The narrator returns to Syria where he asks after the Sheik. People say the Sheik has long left for his country and been replaced by his brother who continues to sell antiques.",
+      pos: { lat: 36.15007354140755, lng: 37.08435058593751 },
+      zoom: 9,
+      animation: cb => { 
+
+        animatedMarkerCallbackI()
+        cb() 
+      }
+    },
+    /*
     {
       title: "Tünel, the historic subway",
       desc: "Hasan mentions to the cobbler that he and his mom take the Tünel when she is going to the doctor.",
@@ -293,6 +390,7 @@
         cb()
       }
     }
+    */
   ]
 
 </script>

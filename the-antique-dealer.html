@@ -88,17 +88,17 @@
 
   audios = {
     cowbell: new Audio("assets/cowbell.mp3"),
-    tunel: new Audio("assets/tunel-noise-short.mp3")
+    tunel: new Audio("assets/tunel-noise-short.mp3"),
+    car: new Audio("assets/car1914.mp3")
   }
   audio = audios.tunel
 
   icons = {
     house: L.icon({ iconUrl: 'assets/house.png', iconSize: [105, 67] }),
-    /*
-    ferry: L.icon({ iconUrl: 'assets/ferry.png', iconSize: [90, 90] }),
-    */
+    car: L.icon({ iconUrl: 'assets/car.png', iconSize: [110, 70] }),
     train: L.icon({ iconUrl: 'assets/tunel.png', iconSize: [90, 90] }),
     cowbell: L.icon({ iconUrl: 'assets/cowbell.png', iconSize: [90, 90] }),
+    kingdavid: L.icon({ iconUrl: 'assets/kingdavid.png', iconSize: [180, 103] }),
     occupationOfIstanbul: L.icon({ iconUrl: 'assets/occupationOfIstanbul.jpg', iconSize: [500, 305] })
   }
 
@@ -117,8 +117,9 @@
       zoom: 8,
       animation: cb => { 
         const lebanon = { lat: 33.84204727583369, lng: 35.559310913085945 }
+        const middle = { lat: 34.49424873578247, lng: 36.0238265991211 }
         const aleppo = { lat: 34.96024630257349, lng: 36.21093750000001 }
-        var line = L.polyline([lebanon, aleppo], {
+        var line = L.polyline([lebanon, middle, aleppo], {
           opacity: 1,
           color: 'black',
           weight: 5
@@ -126,10 +127,10 @@
         map.addLayer(line)
         toRemoveLater.push(line)
 
-        audio = audios.tunel
+        audio = audios.car
         audio.play()
         var animatedMarker = L.animatedMarker(line.getLatLngs(), {
-          icon: icons.train,
+          icon: icons.car,
           interval: 2000,
           onEnd : animatedMarkerCallback
         })
@@ -203,7 +204,9 @@
       pos: { lat: 31.77385607907466, lng: 35.22766113281251 },
       zoom: 9,
       animation: cb => { 
-
+        let m = L.marker({ lat: 31.77385607907466, lng: 35.22766113281251 }, { icon: icons.kingdavid })
+        map.addLayer(m)
+        toRemoveLater.push(m)
         animatedMarkerCallbackI()
         cb() 
       }

@@ -89,12 +89,14 @@
   audios = {
     cowbell: new Audio("assets/cowbell.mp3"),
     tunel: new Audio("assets/tunel-noise-short.mp3"),
-    car: new Audio("assets/car1914.mp3")
+    car: new Audio("assets/car1914.mp3"),
+    bar: new Audio("assets/bar.mp3"),
+    horse: new Audio("assets/horse.mp3")
   }
   audio = audios.tunel
 
   icons = {
-    house: L.icon({ iconUrl: 'assets/house.png', iconSize: [105, 67] }),
+    house: L.icon({ iconUrl: 'assets/afghanhome.png', iconSize: [145, 107] }),
     car: L.icon({ iconUrl: 'assets/car.png', iconSize: [110, 70] }),
     train: L.icon({ iconUrl: 'assets/tunel.png', iconSize: [90, 90] }),
     cowbell: L.icon({ iconUrl: 'assets/cowbell.png', iconSize: [90, 90] }),
@@ -187,11 +189,14 @@
       pos: { lat: 41.062656637609344, lng: 29.02519226074219 },
       zoom: 12,
       animation: cb => { 
+        audio = audios.horse
+        audio.play()
 
         console.log("OVERLAY");
         let overlay = L.marker({ lat: 41.030574134537254, lng: 28.975431919097904 }, {
           icon: icons.occupationOfIstanbul
         })
+        overlay.zIndexOffset = 1000
         map.addLayer(overlay)
         toRemoveLater.push(overlay)
         animatedMarkerCallbackI()
@@ -204,6 +209,8 @@
       pos: { lat: 31.77385607907466, lng: 35.22766113281251 },
       zoom: 9,
       animation: cb => { 
+        audio = audios.bar
+        audio.play()
         let m = L.marker({ lat: 31.77385607907466, lng: 35.22766113281251 }, { icon: icons.kingdavid })
         map.addLayer(m)
         toRemoveLater.push(m)
